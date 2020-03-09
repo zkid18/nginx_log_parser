@@ -36,7 +36,7 @@ class TestLogAnalyzer(unittest.TestCase):
         self.external_valid_conf_dict_joined = join_configs(self.external_valid_config_dict, self.default_config)
         self.external_uncomplete_conf_dict_joined = join_configs(self.external_uncomplete_config_dict,
                                                                 self.default_config)
-        
+
         self.assertDictEqual(self.external_valid_conf_dict_joined, self.expected_valid_config)
         self.assertDictEqual(self.external_uncomplete_conf_dict_joined, self.expected_uncomplete_config)
 
@@ -59,13 +59,13 @@ class TestLogAnalyzer(unittest.TestCase):
 
         with open_log(self.plain_log_path) as f:
             self.plain_file = f.read()
-        
+
         with self.expected_open_method_gz_log as f:
             self.expected_gz_file = f.read()
 
         with open_log(self.gz_log_path) as f:
             self.gz_file = f.read()
-        
+
         self.assertEqual(self.expected_plain_file, self.plain_file)
         self.assertEqual(self.expected_gz_file, self.gz_file)
 
@@ -74,7 +74,7 @@ class TestLogAnalyzer(unittest.TestCase):
                         "GET /api/v2/banner/1717161 http/1.1" 200 2116 "-" "Slotovod" \
                         "-" "1498709450-2118016444-4709-10027411" "712e90144abee9" 0.199'
         self.log_post = '1.126.153.80 -  - [29/Jun/2017:07:10:50 +0300] \
-                        "POST /api/v2/banner/22532881/statistic/outgoings/?date_from=2017-06-29&date_to=2017-06-29 HTTP/1.1" \
+                        "POST /api/v2/banner/22532881/statistic/outgoings/?date_from=2017-06-29 HTTP/1.1" \
                         200 40 "-" "-" "-" "1498709450-48424485-4708-9845489" "1835ae0f17f" 0.126'
         
         self.log_wrong_url = '1.169.137.128 -  - [29/jun/2017:07:10:50 +0300] \
@@ -92,7 +92,7 @@ class TestLogAnalyzer(unittest.TestCase):
         self.expected_log_wrong_url_parser_req_time = 0.198
         self.expected_log_wrong_time_parsed_req_time = None
         self.expected_log_get_parsed_url = '/api/v2/banner/1717161'
-        self.expected_log_post_parsed_url = '/api/v2/banner/22532881/statistic/outgoings/?date_from=2017-06-29&date_to=2017-06-29'
+        self.expected_log_post_parsed_url = '/api/v2/banner/22532881/statistic/outgoings/?date_from=2017-06-29'
         self.expected_log_wrong_url_parsed_url = None
         self.expected_log_wrong_time_parsed_url = '/api/v2/banner/1717161'
         

@@ -96,7 +96,6 @@ def aggregate_log(raw_data):
     logging.info("Started aggregation")
     total_number_urls = sum([len(req_time_list) for _, req_time_list in raw_data.items()])
     sum_request_time = sum([sum(req_time_list) for _, req_time_list in raw_data.items()])
-    logging.info("Total number of urk is {}".format(total_number_urls))
 
     def round_up(num):
         multiplier = 10 ** 3
