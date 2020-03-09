@@ -5,10 +5,7 @@ Script renders the results into `report.html`
 You can refer the `report-2017.06.30.html` as an report example example.
 
 Currently the usage of customized report template is not supported.
-
-## Getting Started
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+To run the script you have to speicfy `/log` and `/report` folder to store log files and reports.
 
 ### Prerequisites
 
