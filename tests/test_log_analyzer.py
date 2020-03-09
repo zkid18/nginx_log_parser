@@ -1,8 +1,7 @@
-from log_analyzer.log_analyzer import aggregate_log, parse_log, decode_log, find_logs, open_log, join_configs, read_config_file
+from log_analyzer.log_analyzer import aggregate_log, parse_log, find_logs, open_log, join_configs, read_config_file
 import unittest
 import os
 import gzip
-import yaml
 
 TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -17,32 +16,32 @@ class TestLogAnalyzer(unittest.TestCase):
         }
 
         self.expected_valid_config = {
-         "REPORT_SIZE": '1500',
+         "REPORT_SIZE": 1500,
          "REPORT_DIR": "./reports",
          "LOG_DIR": "./log"
         }
 
         self.expected_uncomplete_config = {
-         "REPORT_SIZE": '2000',
+         "REPORT_SIZE": 2000,
          "REPORT_DIR": "./reports",
          "LOG_DIR": "./log"
         }
 
         self.external_valid_config = os.path.join(TEST_DIR, './test_valid_conf.yaml')
         self.external_valid_config_dict = read_config_file(self.external_valid_config)
-        
+
         self.external_uncomplete_config = os.path.join(TEST_DIR, './test_conf.yaml')
         self.external_uncomplete_config_dict = read_config_file(self.external_uncomplete_config)
 
         self.external_valid_conf_dict_joined = join_configs(self.external_valid_config_dict, self.default_config)
-        self.external_uncomplete_conf_dict_joined = join_configs(self.external_uncomplete_config_dict, self.default_config)
+        self.external_uncomplete_conf_dict_joined = join_configs(self.external_uncomplete_config_dict,
+                                                                self.default_config)
         
         self.assertDictEqual(self.external_valid_conf_dict_joined, self.expected_valid_config)
         self.assertDictEqual(self.external_uncomplete_conf_dict_joined, self.expected_uncomplete_config)
 
-
     def test_find_log(self):
-        self.expected_available_logs = ['nginx-access-ui.log-20170630.gz',
+        self.expected_available_logs = ['nginx-access-ui.log-20170629.gz',
                                         'nginx-access-ui.log-20170629',
                                         'nginx-access-ui.log-20170630.tgz']
         self.available_logs = find_logs(os.path.join(TEST_DIR, './test_log'))
@@ -52,9 +51,9 @@ class TestLogAnalyzer(unittest.TestCase):
         self.plain_log_path = os.path.join(TEST_DIR, './test_log', 'nginx-access-ui.log-20170629')
         self.expected_open_method_plain_log = open(self.plain_log_path, 'rb')
 
-        self.gz_log_path = os.path.join(TEST_DIR, './test_log', 'nginx-access-ui.log-20170630.gz')
+        self.gz_log_path = os.path.join(TEST_DIR, './test_log', 'nginx-access-ui.log-20170629.gz')
         self.expected_open_method_gz_log = gzip.open(self.gz_log_path, 'rb')
-        
+
         with self.expected_open_method_plain_log as f:
             self.expected_plain_file = f.read()
 
