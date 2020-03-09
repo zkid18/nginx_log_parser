@@ -76,16 +76,14 @@ class TestLogAnalyzer(unittest.TestCase):
         self.log_post = '1.126.153.80 -  - [29/Jun/2017:07:10:50 +0300] \
                         "POST /api/v2/banner/22532881/statistic/outgoings/?date_from=2017-06-29 HTTP/1.1" \
                         200 40 "-" "-" "-" "1498709450-48424485-4708-9845489" "1835ae0f17f" 0.126'
-        
+
         self.log_wrong_url = '1.169.137.128 -  - [29/jun/2017:07:10:50 +0300] \
                             "/api/v2/banner/1717161 HTTP/1.1" 200 2116 "-" "Slotovod" "-" \
                             "1498709450-2118016444-4709-10027411" "712e90144abee9" 0.198'
-        
 
         self.log_wrong_time = '1.169.137.128 -  - [29/jun/2017:07:10:50 +0300] \
                                     "/api/v2/banner/1717161 HTTP/1.1" 200 2116 "-" "Slotovod" \
                                     "-" "1498709450-2118016444-4709-10027411" 0.199 "712e90144abe9e"'
-
 
         self.expected_log_get_parsed_req_time = 0.199
         self.expected_log_post_parsed_req_time = 0.126
@@ -95,7 +93,7 @@ class TestLogAnalyzer(unittest.TestCase):
         self.expected_log_post_parsed_url = '/api/v2/banner/22532881/statistic/outgoings/?date_from=2017-06-29'
         self.expected_log_wrong_url_parsed_url = None
         self.expected_log_wrong_time_parsed_url = '/api/v2/banner/1717161'
-        
+      
         self.get_req_time, self.get_url = parse_log(self.log_get)
         self.post_req_time, self.post_url = parse_log(self.log_post)
         self.wrong_url_req_time, self.wrong_url_url = parse_log(self.log_wrong_url)
@@ -108,7 +106,6 @@ class TestLogAnalyzer(unittest.TestCase):
         self.assertEqual(self.expected_log_wrong_url_parser_req_time, float(self.wrong_url_req_time))
         self.assertEqual(self.expected_log_wrong_url_parsed_url, self.wrong_url_url)
         self.assertEqual(self.expected_log_wrong_time_parsed_req_time, self.wrong_time_req_time)
-        #self.assertEqual(self.expected_log_wrong_time_parsed_url, self.wrong_time_url)
     
     def test_aggregate_log(self):
         self.raw_data = {'/api/v2/banner/171': [0.198, 0.641, 0.781], 

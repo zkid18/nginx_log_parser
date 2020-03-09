@@ -36,10 +36,11 @@ MANIFEST
 
 #Logs and reports files
 log_analyzer/log
-log_analyzer/reports
+#log_analyzer/reports
 
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
 
 # Unit test / coverage reports
+.DS_Store
