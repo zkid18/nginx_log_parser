@@ -1,16 +1,12 @@
 # NGNIX log statistics
 
-The script analyze the ngnix log file and calculate statistics based on request time parameter.
-Script renders the results into `report.html`
+The script analyzes the ngnix log file and calculates statistics based on the request time parameter. Script renders the results into `report.html` 
 You can refer the `report-2017.06.30.html` as an report example example.
-
-Currently the usage of customized report template is not supported.
-To run the script you have to speicfy `/log` and `/report` folder to store log files and reports.
+Currently, the usage of customized report template is not supported. To run the script, you have to specify `/log` and `/report` folder to store log files and reports.
 
 ### Prerequisites
 
-There are no external dependenices other that `pyymal` libaray for external config file. 
-Currently only `yaml` configs are supported. Other format are considered in the future.
+There are no external dependencies other than `pyymal` library for the external config file. Currently, only YAML configs are supported. Other formats are considered in the future.
 
 ```
 pip3 install pyyaml
@@ -48,5 +44,5 @@ python3 -m unittest tests/test_log_analyzer
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT License
 
