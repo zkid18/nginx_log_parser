@@ -1,4 +1,4 @@
-from log_analyzer.log_analyzer import aggregate_log, parse_log, find_logs, open_log, join_configs, read_config_file
+from log_analyzer.log_analyzer import aggregate_log, get_last_log, parse_log, find_logs, open_log, join_configs, read_config_file
 import unittest
 import os
 import gzip
@@ -46,6 +46,12 @@ class TestLogAnalyzer(unittest.TestCase):
                                         'nginx-access-ui.log-20170630.tgz']
         self.available_logs = find_logs(os.path.join(TEST_DIR, './test_log'))
         self.assertEqual(sorted(self.expected_available_logs), sorted(self.available_logs))
+    
+    def find_last_log(self):
+        self.logs = ['20190218', '20201230', '20190517']
+
+        self.expected_log = '20201230'
+        self.assertEqual(self.expected_log, get_last_log(self.logs))
 
     def test_open_log(self):
         self.plain_log_path = os.path.join(TEST_DIR, './test_log', 'nginx-access-ui.log-20170629')

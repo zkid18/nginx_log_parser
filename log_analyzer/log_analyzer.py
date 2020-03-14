@@ -6,17 +6,17 @@
 #                     '$status $body_bytes_sent "$http_referer" '
 #                     '"$http_user_agent" "$http_x_forwarded_for" "$http_X_REQUEST_ID" "$http_X_RB_USER" '
 #                     '$request_time';
-
 import gzip
 import re
 from copy import deepcopy
 import os
-import sys
 from collections import defaultdict
 import logging
 from string import Template
 import argparse
 import yaml
+import json
+import shutil
 
 config = {
     "REPORT_SIZE": 1000,
@@ -48,10 +48,12 @@ def render(data, report_dict, filename):
     with open(template_dir, 'r', encoding='utf-8') as html_template:
         template = html_template.read()
     string_template = Template(template)
+    tmp_filename = os.path.join(ROOT_DIR, report_dict, 'tmp_report-{}.html'.format(filename))
     filename = os.path.join(ROOT_DIR, report_dict, 'report-{}.html'.format(filename))
-    sub_dict = dict(table_json=str(data))
-    with open(filename, 'w') as fh:
+    sub_dict = dict(table_json=json.dumps(data))
+    with open(tmp_filename, 'w') as fh:
         fh.write(string_template.safe_substitute(sub_dict))
+    shutil.move(tmp_filename, filename)
 
 
 def save_top_logs(data, report_size, report_dir,  filename):
@@ -170,7 +172,6 @@ def decode_log(line):
     try:
         line = line.decode('utf-8')
     except UnicodeDecodeError:
-        line = line.decode('ISO-8859-1')
         logging.debug("UnicodeDecodeError for line {}".format(line))
     return line
 
@@ -239,6 +240,28 @@ def find_logs(log_dir):
     return valid_log_files
 
 
+def get_last_log(valid_log_files):
+    """Find the loast log file
+    Write more carefull regex for edge cases:
+    09122018
+    20560719
+    20183412
+    """
+    date_format = re.compile(r"""(?P<year>\d{4})(?P<month>([0-9][0-9]))(?P<day>[0-9][0-9])""")
+    max_year, max_month, max_day = 1900, 1, 1
+
+    for file_name in valid_log_files:
+        file_dict = re.search(date_format, file_name).groupdict()
+        if int(file_dict['year']) > max_year:
+            last_log = file_name
+        elif int(file_dict['month']) > max_month:
+            last_log = file_name
+        elif int(file_dict['day']) > max_day:
+            last_log = file_name
+
+    return last_log
+
+
 def open_log(log_file_path):
     """ Mapping files path with reading method
 
@@ -273,54 +296,40 @@ def is_log_parsed(report_dir, log_file):
 
 
 def main(config):
-
     logging_filename = config['LOGGING_FILE'] if 'LOGGING_FILE' in config else None
-    print(logging_filename)
-    if logging_filename:
-        logging.basicConfig(
+    logging.basicConfig(
                         level=logging.DEBUG,
                         format='%(asctime)s] %(levelname).1s %(message)s',
                         datefmt='%Y.%m.%d %H:%M:%S',
                         filename=logging_filename
                         )
-    else:
-        logging.basicConfig(
-                        level=logging.DEBUG,
-                        format='%(asctime)s] %(levelname).1s %(message)s',
-                        datefmt='%Y.%m.%d %H:%M:%S',
-                        stream=sys.stdout
-                        )
-
     logs_to_parse = find_logs(os.path.join(ROOT_DIR, config['LOG_DIR']))
 
-    if len(logs_to_parse) == 0:
+    if not logs_to_parse:
         logging.error("Log dir is empty")
         raise Exception("Log dir is empty")
 
-    for log_file in logs_to_parse:
-        if is_log_parsed(config['REPORT_DIR'], log_file):
-            logging.debug("Report for {} already exsit".format(log_file))
-            continue
-        log_file_path = os.path.join(ROOT_DIR, config['LOG_DIR'], log_file)
-        open_method = open_log(log_file_path)
+    last_log = get_last_log(logs_to_parse)
+    if is_log_parsed(config['REPORT_DIR'], last_log):
+        logging.debug("Report for {} already exsit".format(last_log))
+    log_file_path = os.path.join(ROOT_DIR, config['LOG_DIR'], last_log)
+    open_method = open_log(log_file_path)
 
-        with open_method as opened_log_file:
-            url_time_json, error_ratio = read_log(opened_log_file)
+    with open_method as opened_log_file:
+        url_time_json, error_ratio = read_log(opened_log_file)
 
-        logging.info("Error threshold is {}".format(error_ratio))
+    logging.info("Error threshold is {}".format(error_ratio))
+    assert error_ratio < parsing_threshold
 
-        if error_ratio > parsing_threshold:
-            continue
+    aggregated_data = aggregate_log(url_time_json)
+    logging.info("Log file data {} aggregated".format(last_log))
 
-        aggregated_data = aggregate_log(url_time_json)
-        logging.info("Log file data {} aggregated".format(log_file))
+    file_format = re.compile(r"""\d{8}""")
+    save_file_name = re.search(file_format, last_log).group()
 
-        file_format = re.compile(r"""\d{8}""")
-        save_file_name = re.search(file_format, log_file).group()
-
-        save_top_logs(aggregated_data, config['REPORT_SIZE'], config['REPORT_DIR'], save_file_name)
-        render(aggregated_data, config['REPORT_DIR'],  save_file_name)
-        logging.info("Log file {} was rendered". format(log_file))
+    # save_top_logs(aggregated_data, config['REPORT_SIZE'], config['REPORT_DIR'], save_file_name)
+    render(aggregated_data, config['REPORT_DIR'],  save_file_name)
+    logging.info("Log file {} was rendered". format(last_log))
 
 
 def join_configs(external_config, default_config):
@@ -347,7 +356,7 @@ def join_configs(external_config, default_config):
         if key not in merged_config:
             merged_config[key] = default_config[key]
 
-    try: 
+    try:
         merged_config['REPORT_SIZE'] = int(merged_config['REPORT_SIZE'])
     except ValueError:
         merged_config['REPORT_SIZE'] = default_config['REPORT_SIZE']
@@ -372,7 +381,7 @@ def read_config_file(external_config_file_path):
 
     try:
         with open(external_config_file_path) as yaml_file:
-            external_config_dict = yaml.load(yaml_file, Loader=yaml.BaseLoader)
+            external_config_dict = yaml.safe_load(yaml_file)
         return external_config_dict
 
     except FileNotFoundError:
@@ -381,9 +390,9 @@ def read_config_file(external_config_file_path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Read cofing')
-    parser.add_argument('-c', '--config', required=False,  help='Config file')
-    args = vars(parser.parse_args())
-    if args['config']:
-        external_config = read_config_file(args['config'])
+    parser.add_argument('-c', '--config', default='conf.yaml', required=False,  help='Config file')
+    args = parser.parse_args()
+    if args.config:
+        external_config = read_config_file(args.config)
         config = join_configs(external_config, config)
     main(config)
