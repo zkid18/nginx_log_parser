@@ -242,11 +242,8 @@ def find_logs(log_dir):
 
 
 def get_last_log(valid_log_files):
-    """Find the loast log file
-    Write more carefull regex for edge cases:
-    09122018
-    20560719
-    20183412
+    """
+    Find the loast log file using datetime
     """
     last_datetime_object = datetime.date(1900, 12, 31)
     log_datetime_dict = {}
@@ -286,7 +283,8 @@ def is_log_parsed(report_dir, render_file_name):
     """
 
     render_file = 'report-{}.html'.format(render_file_name)
-    return True if render_file in os.listdir(os.path.join(ROOT_DIR, report_dir)) else False
+    log_file_path = os.path.join(ROOT_DIR, report_dir, render_file)
+    return os.path.exists(log_file_path)
 
 
 def main(config):
