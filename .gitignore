@@ -35,7 +35,7 @@ MANIFEST
 *.spec
 
 #Logs and reports files
-log_analyzer/log
+*.log
 #log_analyzer/reports
 
 # Installer logs
