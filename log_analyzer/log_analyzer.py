@@ -15,6 +15,7 @@ import logging
 from string import Template
 import argparse
 import yaml
+import datetime
 import json
 import shutil
 
@@ -247,19 +248,14 @@ def get_last_log(valid_log_files):
     20560719
     20183412
     """
-    date_format = re.compile(r"""(?P<year>\d{4})(?P<month>([0-9][0-9]))(?P<day>[0-9][0-9])""")
-    max_year, max_month, max_day = 1900, 1, 1
-
-    for file_name in valid_log_files:
-        file_dict = re.search(date_format, file_name).groupdict()
-        if int(file_dict['year']) > max_year:
-            last_log = file_name
-        elif int(file_dict['month']) > max_month:
-            last_log = file_name
-        elif int(file_dict['day']) > max_day:
-            last_log = file_name
-
-    return last_log
+    last_datetime_object = datetime.date(1900, 12, 31)
+    log_datetime_dict = {}
+    for log_file_name in valid_log_files:
+        datetime_object = datetime.strptime(log_file_name, '%Y%m%d')
+        log_datetime_dict[datetime_object] = log_file_name 
+        if datetime_object > last_datetime_object:
+            last_datetime_object = datetime_object
+    return log_datetime_dict[last_datetime_object]
 
 
 def open_log(log_file_path):
@@ -278,7 +274,7 @@ def open_log(log_file_path):
     return open_method
 
 
-def is_log_parsed(report_dir, log_file):
+def is_log_parsed(report_dir, render_file_name):
     """ Check if log already exist in report folder
 
     Agrs:
@@ -289,14 +285,12 @@ def is_log_parsed(report_dir, log_file):
         True if file exsit, otherwise False
     """
 
-    file_format = re.compile(r"""\d{8}""")
-    render_file_name = re.search(file_format, log_file).group()
     render_file = 'report-{}.html'.format(render_file_name)
     return True if render_file in os.listdir(os.path.join(ROOT_DIR, report_dir)) else False
 
 
 def main(config):
-    logging_filename = config['LOGGING_FILE'] if 'LOGGING_FILE' in config else None
+    logging_filename = config.get('LOGGING_FILE', None)
     logging.basicConfig(
                         level=logging.DEBUG,
                         format='%(asctime)s] %(levelname).1s %(message)s',
@@ -310,7 +304,10 @@ def main(config):
         raise Exception("Log dir is empty")
 
     last_log = get_last_log(logs_to_parse)
-    if is_log_parsed(config['REPORT_DIR'], last_log):
+    file_format = re.compile(r"""\d{8}""")
+    save_file_name = re.search(file_format, last_log).group()
+
+    if is_log_parsed(config['REPORT_DIR'], save_file_name):
         logging.debug("Report for {} already exsit".format(last_log))
     log_file_path = os.path.join(ROOT_DIR, config['LOG_DIR'], last_log)
     open_method = open_log(log_file_path)
@@ -323,9 +320,6 @@ def main(config):
 
     aggregated_data = aggregate_log(url_time_json)
     logging.info("Log file data {} aggregated".format(last_log))
-
-    file_format = re.compile(r"""\d{8}""")
-    save_file_name = re.search(file_format, last_log).group()
 
     # save_top_logs(aggregated_data, config['REPORT_SIZE'], config['REPORT_DIR'], save_file_name)
     render(aggregated_data, config['REPORT_DIR'],  save_file_name)
@@ -385,6 +379,7 @@ def read_config_file(external_config_file_path):
         return external_config_dict
 
     except FileNotFoundError:
+        logging.error("File not found in the direcotry")
         return None
 
 

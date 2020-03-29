@@ -126,7 +126,8 @@ class TestLogAnalyzer(unittest.TestCase):
                             'time_max': 0.781,
                             'time_med': 0.641,
                             'time_perc': 0.296,
-                            'time_sum': 1.62},
+                            'time_sum': 1.62
+                            },
                             {'url': '/api/v2/banner/181',
                             'count': 3,
                             'count_perc': 0.3,
@@ -134,7 +135,8 @@ class TestLogAnalyzer(unittest.TestCase):
                             'time_max': 0.878,
                             'time_med': 0.543,
                             'time_perc': 0.294,
-                            'time_sum': 1.608},
+                            'time_sum': 1.608
+                            },
                             {'url': '/api/v2/banner/193',
                             'count': 4,
                             'count_perc': 0.4,
@@ -142,12 +144,12 @@ class TestLogAnalyzer(unittest.TestCase):
                             'time_max': 0.981,
                             'time_med': 0.539,
                             'time_perc': 0.411,
-                            'time_sum': 2.251}]
+                            'time_sum': 2.251
+                            }]
         
         self.aggregared_data = aggregate_log(self.raw_data)
-        self.assertDictEqual(self.expected_aggregated_data[0], self.aggregared_data[0])   
-        self.assertDictEqual(self.expected_aggregated_data[1], self.aggregared_data[1])
-        self.assertDictEqual(self.expected_aggregated_data[2], self.aggregared_data[2])
+        self.assertCountEqual(self.expected_aggregated_data, self.aggregared_data)
+
 
 
     if __name__ == '__main__':
