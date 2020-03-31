@@ -34,7 +34,7 @@ python3 log_analyzer/log_analyzer.py --config conf.yaml
 To run test
 
 ```
-python3 -m unittest tests/test_log_analyzer
+python3 -m unittest tests/test_log_analyzer.py
 ```
 
 
