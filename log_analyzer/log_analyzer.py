@@ -333,7 +333,11 @@ def join_configs(external_config, default_config):
         "REPORT_DIR": "./reports",
         "LOG_DIR": "./log",
     }
-    and join config and external file
+    and join this default config and external config
+
+    If there are any items that are not exist in
+    external config use values for corresponding keys
+    from default config
 
     Args:
         external_config: path to external config
@@ -342,17 +346,11 @@ def join_configs(external_config, default_config):
     Returns:
         external of default config file
     }"""
+    
     merged_config = deepcopy(external_config)
-    default_keys = ['REPORT_SIZE', 'REPORT_DIR', 'LOG_DIR']
-    for key in default_keys:
-        if key not in merged_config:
-            merged_config[key] = default_config[key]
-
-    try:
-        merged_config['REPORT_SIZE'] = int(merged_config['REPORT_SIZE'])
-    except ValueError:
-        merged_config['REPORT_SIZE'] = default_config['REPORT_SIZE']
-
+    dict_to_update = {key:value for key,value in default_config.items() \
+                    if key not in merged_config.keys()}
+    merged_config.update(dict_to_update)    
     return merged_config
 
 
@@ -375,7 +373,6 @@ def read_config_file(external_config_file_path):
         with open(external_config_file_path) as yaml_file:
             external_config_dict = yaml.safe_load(yaml_file)
         return external_config_dict
-
     except FileNotFoundError:
         logging.error("File not found in the direcotry")
         return None
@@ -385,7 +382,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Read cofing')
     parser.add_argument('-c', '--config', default='conf.yaml', required=False,  help='Config file')
     args = parser.parse_args()
-    if args.config:
-        external_config = read_config_file(args.config)
-        config = join_configs(external_config, config)
+    external_config = read_config_file(args.config)
+    config = join_configs(external_config, config)
     main(config)
