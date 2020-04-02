@@ -239,7 +239,7 @@ def is_log_parsed(report_dir, render_file_name):
     Agrs:
         report_dir: path to reports
         log_file: name of the log file
-
+        
     Return:
         True if file exsit, otherwise False
     """
@@ -264,10 +264,10 @@ def main(config):
         raise Exception("Log dir is empty")
 
     last_log, save_file_name = get_last_log(logs_to_parse)
-    print(save_file_name)
 
     if is_log_parsed(config['REPORT_DIR'], save_file_name):
         logging.debug("Report for {} already exsit".format(last_log))
+    
     log_file_path = os.path.join(ROOT_DIR, config['LOG_DIR'], last_log)
     open_method = open_log(log_file_path)
 
@@ -280,8 +280,8 @@ def main(config):
     aggregated_data = aggregate_log(url_time_json)
     logging.info("Log file data {} aggregated".format(last_log))
 
-    data_to_rander = sorted(aggregated_data, key=lambda x: x['time_sum'])[:config['REPORT_SIZE']]
-    render(data_to_rander, config['REPORT_DIR'],  save_file_name)
+    data_to_render = sorted(aggregated_data, key=lambda x: x['time_sum'], reverse=True)[:config['REPORT_SIZE']]
+    render(data_to_render, config['REPORT_DIR'],  save_file_name)
     logging.info("Log file {} was rendered". format(last_log))
 
 
