@@ -57,26 +57,6 @@ def render(data, report_dict, filename):
     shutil.move(tmp_filename, filename)
 
 
-def save_top_logs(data, report_size, report_dir,  filename):
-    """Function for finding top logs sorted by 'time_sum'
-
-    Function finds top URL with the maximum time_sum
-
-    Args:
-        data: List of aggregated logs
-        report_size: Number of top URL include in report
-
-    Returns:
-        Save top logs to plain file
-    """
-    sorted_by_time_sum = sorted(data, key=lambda x: x['time_sum'])
-    top_url = [data['url'] for data in sorted_by_time_sum][:report_size]
-    top_log_report_path = os.path.join(ROOT_DIR, report_dir, 'top_log_report_{}'.format(filename))
-    with open(top_log_report_path, 'w') as fh:
-        for url in top_url:
-            fh.write(url + '\n')
-
-
 def aggregate_log(raw_data):
     ''' Aggregate log files with by following parameters
 
@@ -154,29 +134,6 @@ def parse_log(line):
     return request_time_data, url_data
 
 
-def decode_log(line):
-    ''' Readking log from the file
-
-    Function to decode the raw byte line
-
-    Args:
-        line - raw byte line
-
-    Retunrs:
-        Decoded line
-
-
-    Things to do:
-    1. Test the input and try to decode it
-    2. Input can be as a byte string
-    '''
-    try:
-        line = line.decode('utf-8')
-    except UnicodeDecodeError:
-        logging.debug("UnicodeDecodeError for line {}".format(line))
-    return line
-
-
 def read_log(read_log_file):
     """ Log manager
 
@@ -196,9 +153,12 @@ def read_log(read_log_file):
     """
     unsuccessfull_log_parsing = 0
     total_log_parsing = 0
-    url_time_json = defaultdict(list)
+    url_time_dict = defaultdict(list)
     for line in read_log_file:
-        decoded_line = decode_log(line)
+        try:
+            decoded_line = line.decode('utf-8')
+        except UnicodeDecodeError:
+            logging.debug("UnicodeDecodeError for line {}".format(line))
         request_time, url = parse_log(decoded_line)
         if request_time:
             logging.info("Successfully parsed request time")
@@ -212,10 +172,10 @@ def read_log(read_log_file):
             unsuccessfull_log_parsing += 1
             logging.debug("Error while parsring {0} with parameter url".format(line))
             continue
-        url_time_json[url].append(float(request_time))
+        url_time_dict[url].append(float(request_time))
         total_log_parsing += 1
         error_rate = unsuccessfull_log_parsing/total_log_parsing
-    return url_time_json, error_rate
+    return url_time_dict, error_rate
 
 
 def find_logs(log_dir):
