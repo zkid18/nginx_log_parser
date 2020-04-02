@@ -320,8 +320,8 @@ def main(config):
     aggregated_data = aggregate_log(url_time_json)
     logging.info("Log file data {} aggregated".format(last_log))
 
-    # save_top_logs(aggregated_data, config['REPORT_SIZE'], config['REPORT_DIR'], save_file_name)
-    render(aggregated_data, config['REPORT_DIR'],  save_file_name)
+    data_to_rander = sorted(aggregated_data, key=lambda x: x['time_sum'])[:config['REPORT_SIZE']]
+    render(data_to_rander, config['REPORT_DIR'],  save_file_name)
     logging.info("Log file {} was rendered". format(last_log))
 
 
