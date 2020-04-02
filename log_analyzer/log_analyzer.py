@@ -15,7 +15,7 @@ import logging
 from string import Template
 import argparse
 import yaml
-import datetime
+from datetime import datetime
 import json
 import shutil
 
@@ -245,11 +245,13 @@ def get_last_log(valid_log_files):
     """
     Find the loast log file using datetime
     """
-    last_datetime_object = datetime.date(1900, 12, 31)
+    date_format = re.compile(r"""(?P<year>\d{4})(?P<month>([0-9][0-9]))(?P<day>[0-9][0-9])""")
+    last_datetime_object = datetime.min
     log_datetime_dict = {}
     for log_file_name in valid_log_files:
-        datetime_object = datetime.strptime(log_file_name, '%Y%m%d')
-        log_datetime_dict[datetime_object] = log_file_name 
+        log_file_date = re.search(date_format, log_file_name).group()
+        datetime_object = datetime.strptime(log_file_date, '%Y%m%d')
+        log_datetime_dict[datetime_object] = (log_file_name, log_file_date)
         if datetime_object > last_datetime_object:
             last_datetime_object = datetime_object
     return log_datetime_dict[last_datetime_object]
@@ -301,9 +303,8 @@ def main(config):
         logging.error("Log dir is empty")
         raise Exception("Log dir is empty")
 
-    last_log = get_last_log(logs_to_parse)
-    file_format = re.compile(r"""\d{8}""")
-    save_file_name = re.search(file_format, last_log).group()
+    last_log, save_file_name = get_last_log(logs_to_parse)
+    print(save_file_name)
 
     if is_log_parsed(config['REPORT_DIR'], save_file_name):
         logging.debug("Report for {} already exsit".format(last_log))
