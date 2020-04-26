@@ -1,6 +1,6 @@
 # NGNIX log statistics
 
-The script analyzes the ngnix log file and calculates statistics based on the request time parameter. Script renders the results into `report.html` 
+The script analyzes the ngnix log file and calculates statistics based on the request time parameter. Script renders the results from the template `report.html` 
 You can refer the `report-2017.06.30.html` as an report example example.
 Currently, the usage of customized report template is not supported. To run the script, you have to specify `/log` and `/report` folder to store log files and reports.
 
